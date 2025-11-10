@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة مدفوعات المطعم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+        }
+
+.btn-group-sm .btn {
+    border-radius: 8px;
+    margin: 2px;
+    padding: 0.4rem 0.6rem;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-success:hover {
+    background-color: var(--success);
+    color: white;
+    transform: scale(1.1);
+}
+
+.btn-outline-danger:hover {
+    background-color: var(--danger);
+    color: white;
+    transform: scale(1.1);
+}
+
+/* تحسين التلميحات */
+[title] {
+    position: relative;
+}
+
+[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+}
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+            border: none;
+            height: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-title {
+            font-size: 0.9rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .card-primary { border-right: 4px solid var(--primary); }
+        .card-success { border-right: 4px solid var(--success); }
+        .card-warning { border-right: 4px solid var(--warning); }
+        .card-danger { border-right: 4px solid var(--danger); }
+
+        .section-title {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--light);
+            font-weight: 600;
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+
+        .table th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 500;
+            border: none;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .btn-custom {
+            border-radius: 25px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .restaurant-info {
+            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--warning);
+        }
+
+        .payment-method-badge {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+        }
+
+        .receipt-number {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .amount-positive {
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .amount-negative {
+            color: var(--danger);
+            font-weight: bold;
+        }
+
+        .progress {
+            height: 10px;
+            margin-top: 10px;
+        }
+
+        .alert-custom {
+            border-radius: 15px;
+            border: none;
+            padding: 1rem 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- رأس الصفحة -->
+    <div class="header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="display-5 fw-bold">
+                        <i class="fas fa-money-bill-wave me-3"></i>إدارة المدفوعات
+                    </h1>
+                    <p class="lead mb-0">عرض وتتبع مدفوعات المطعم</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="/payment_dashboard" class="btn btn-light btn-custom">
+                        <i class="fas fa-arrow-right me-2"></i>العودة للوحة التحكم
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- رسائل التنبيه -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-custom alert-dismissible fade show">
+                        <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' }} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- معلومات المطعم -->
+        <div class="restaurant-info">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h3 class="fw-bold text-dark mb-2">
+                        <i class="fas fa-utensils me-2"></i>{{ restaurant.name }}
+                    </h3>
+                    <p class="mb-0 text-muted">
+                        <i class="fas fa-id-card me-2"></i>رقم المطعم: {{ restaurant.id }}
+                        {% if restaurant.phone %}
+                        | <i class="fas fa-phone me-2"></i>{{ restaurant.phone }}
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <span class="badge bg-{{ 'success' if remaining_balance <= 0 else 'warning' }} fs-6 p-3">
+                        <i class="fas fa-{{ 'check-circle' if remaining_balance <= 0 else 'clock' }} me-2"></i>
+                        الرصيد: {{ "{:,.0f}".format(remaining_balance) }} ر.س
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- بطاقات الإحصائيات -->
+        <div class="row">
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card card-primary">
+                    <div class="text-center">
+                        <div class="stat-icon text-primary">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                        </div>
+                        <div class="stat-number text-primary">{{ "{:,.0f}".format(stats.total_due) }} ر.س</div>
+                        <div class="stat-title">إجمالي المستحق</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card card-success">
+                    <div class="text-center">
+                        <div class="stat-icon text-success">
+                            <i class="fas fa-money-check"></i>
+                        </div>
+                        <div class="stat-number text-success">{{ "{:,.0f}".format(stats.total_paid) }} ر.س</div>
+                        <div class="stat-title">إجمالي المدفوع</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card card-{{ 'success' if remaining_balance <= 0 else 'warning' }}">
+                    <div class="text-center">
+                        <div class="stat-icon text-{{ 'success' if remaining_balance <= 0 else 'warning' }}">
+                            <i class="fas fa-scale-balanced"></i>
+                        </div>
+                        <div class="stat-number text-{{ 'success' if remaining_balance <= 0 else 'warning' }}">
+                            {{ "{:,.0f}".format(remaining_balance) }} ر.س
+                        </div>
+                        <div class="stat-title">الرصيد المتبقي</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card card-info">
+                    <div class="text-center">
+                        <div class="stat-icon text-info">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <div class="stat-number text-info">{{ payments|length }}</div>
+                        <div class="stat-title">عدد المعاملات</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- شريط التقدم -->
+        <div class="table-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>نسبة السداد</span>
+                    <span class="fw-bold">
+                        {% if stats.total_due > 0 %}
+                            {{ "%.1f"|format((stats.total_paid / stats.total_due) * 100) }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar bg-success"
+                         style="width: {% if stats.total_due > 0 %}{{ (stats.total_paid / stats.total_due) * 100 }}%{% else %}0%{% endif %}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- نموذج إضافة دفعة جديدة -->
+            <div class="col-lg-5">
+                <div class="form-card">
+                    <h3 class="section-title">
+                        <i class="fas fa-plus-circle me-2"></i>إضافة دفعة جديدة
+                    </h3>
+
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="amount_paid" class="form-label">المبلغ المدفوع</label>
+                            <div class="input-group">
+                                <input type="number"
+                                       class="form-control"
+                                       id="amount_paid"
+                                       name="amount_paid"
+                                       step="0.01"
+                                       min="0.01"
+                                       max="{{ remaining_balance }}"
+                                       required
+                                       placeholder="0.00">
+                                <span class="input-group-text">ر.س</span>
+                            </div>
+                            <div class="form-text">
+                                الحد الأقصى: {{ "{:,.0f}".format(remaining_balance) }} ر.س
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="payment_method" class="form-label">طريقة الدفع</label>
+                            <select class="form-select" id="payment_method" name="payment_method" required>
+                                <option value="">اختر طريقة الدفع</option>
+                                <option value="نقدي">نقدي</option>
+                                <option value="تحويل بنكي">تحويل بنكي</option>
+                                <option value="شيك">شيك</option>
+                                <option value="بطاقة ائتمان">بطاقة ائتمان</option>
+                                <option value="محفظة إلكترونية">محفظة إلكترونية</option>
+                                <option value="آخرى">أخرى</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">ملاحظات</label>
+                            <textarea class="form-control"
+                                      id="notes"
+                                      name="notes"
+                                      rows="3"
+                                      placeholder="أضف أي ملاحظات حول الدفعة (اختياري)..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-success btn-custom w-100">
+                            <i class="fas fa-check me-2"></i>تسجيل الدفعة
+                        </button>
+                    </form>
+                </div>
+
+                <!-- ملخص سريع -->
+                <div class="table-card">
+                    <div class="card-header bg-white">
+                        <h5 class="section-title mb-0">
+                            <i class="fas fa-chart-pie me-2"></i>ملخص سريع
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6 mb-3">
+                                <div class="border rounded p-3">
+                                    <h5 class="text-success mb-1">{{ "{:,.0f}".format(stats.total_paid) }} ر.س</h5>
+                                    <small class="text-muted">المدفوع</small>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="border rounded p-3">
+                                    <h5 class="text-{{ 'success' if remaining_balance <= 0 else 'warning' }} mb-1">
+                                        {{ "{:,.0f}".format(remaining_balance) }} ر.س
+                                    </h5>
+                                    <small class="text-muted">المتبقي</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% if remaining_balance > 0 %}
+                        <div class="alert alert-warning text-center">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            هناك مدفوعات متأخرة بقيمة {{ "{:,.0f}".format(remaining_balance) }} ر.س
+                        </div>
+                        {% else %}
+                        <div class="alert alert-success text-center">
+                            <i class="fas fa-check-circle me-2"></i>
+                            جميع المدفوعات محدثة
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- سجل المدفوعات -->
+            <div class="col-lg-7">
+                <div class="table-card">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h3 class="section-title mb-0">
+                            <i class="fas fa-history me-2"></i>سجل المدفوعات
+                        </h3>
+                        <span class="badge bg-primary">{{ payments|length }} معاملة</span>
+                    </div>
+
+                <div class="table-responsive">
+    <table class="table table-hover mb-0">
+        <thead>
+            <tr>
+                <th>رقم الإيصال</th>
+                <th>المبلغ</th>
+                <th>طريقة الدفع</th>
+                <th>التاريخ</th>
+                <th>الرصيد بعد</th>
+                <th>ملاحظات</th>
+                <!-- العمود الجديد -->
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if payments %}
+                {% for payment in payments %}
+                <tr>
+                    <td>
+                        <span class="receipt-number">{{ payment.receipt_number }}</span>
+                    </td>
+                    <td class="amount-positive">
+                        +{{ "{:,.0f}".format(payment.amount_paid) }} ر.س
+                    </td>
+                    <td>
+                        <span class="badge bg-secondary payment-method-badge">
+                            {{ payment.payment_method }}
+                        </span>
+                    </td>
+                    <td>
+                        <small>
+                            {% if payment.payment_date %}
+                                {{ payment.payment_date.strftime('%Y-%m-%d') }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </small>
+                    </td>
+                    <td class="amount-{{ 'positive' if payment.remaining_balance <= 0 else 'negative' }}">
+                        {{ "{:,.0f}".format(payment.remaining_balance) }} ر.س
+                    </td>
+                    <td>
+                        {% if payment.notes %}
+                            <small class="text-muted" title="{{ payment.notes }}">
+                                {{ payment.notes[:20] }}{% if payment.notes|length > 20 %}...{% endif %}
+                            </small>
+                        {% else %}
+                            <small class="text-muted">-</small>
+                        {% endif %}
+                    </td>
+                    <!-- الخلية الجديدة للإجراءات -->
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <!-- زر طباعة الإيصال -->
+                            <a href="{{ url_for('print_receipt', payment_id=payment.id) }}"
+                               class="btn btn-outline-success"
+                               target="_blank"
+                               title="طباعة الإيصال">
+                                <i class="fas fa-print"></i>
+                            </a>
+
+                            <!-- زر حذف الدفعة -->
+                            <a href="{{ url_for('delete_payment', payment_id=payment.id) }}"
+                               class="btn btn-outline-danger"
+                               onclick="return confirm('هل أنت متأكد من حذف هذه الدفعة؟')"
+                               title="حذف الدفعة">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        <i class="fas fa-receipt fa-2x mb-3"></i>
+                        <p>لا توجد مدفوعات مسجلة</p>
+                        <small class="text-muted">استخدم النموذج لإضافة أول دفعة</small>
+                    </td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+                <!-- إحصائيات إضافية -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="table-card">
+                            <div class="card-body text-center">
+                                <h5 class="text-primary">آخر دفعة</h5>
+                                {% if payments %}
+                                    <p class="mb-1 fw-bold">{{ "{:,.0f}".format(payments[0].amount_paid) }} ر.س</p>
+                                    <small class="text-muted">
+                                        {{ payments[0].payment_date.strftime('%Y-%m-%d') if payments[0].payment_date else '-' }}
+                                    </small>
+                                {% else %}
+                                    <p class="text-muted">لا توجد مدفوعات</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="table-card">
+                            <div class="card-body text-center">
+                                <h5 class="text-success">متوسط الدفعة</h5>
+                                {% if payments %}
+                                    <p class="mb-1 fw-bold">
+                                        {{ "{:,.0f}".format(stats.total_paid / payments|length) }} ر.س
+                                    </p>
+                                    <small class="text-muted">لكل معاملة</small>
+                                {% else %}
+                                    <p class="text-muted">لا توجد مدفوعات</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- التذييل -->
+    <footer class="bg-dark text-light text-center py-3 mt-5">
+        <div class="container">
+            <p class="mb-0">نظام إدارة المدفوعات &copy; {{ now.strftime('%Y') if now else '2024' }}</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // تحديث الحد الأقصى للمبلغ بناءً على الرصيد المتبقي
+        document.addEventListener('DOMContentLoaded', function() {
+            const amountInput = document.getElementById('amount_paid');
+            const maxAmount = {{ remaining_balance }};
+
+            amountInput.addEventListener('input', function() {
+                const value = parseFloat(this.value) || 0;
+
+                if (value > maxAmount) {
+                    this.classList.add('is-invalid');
+                    this.setCustomValidity('المبلغ أكبر من الرصيد المتبقي');
+                } else {
+                    this.classList.remove('is-invalid');
+                    this.setCustomValidity('');
+                }
+            });
+        });
+
+        // إظهار تأكيد عند تقديم النموذج
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const amount = document.getElementById('amount_paid').value;
+            const method = document.getElementById('payment_method').value;
+
+            if (!amount || !method) {
+                e.preventDefault();
+                alert('يرجى ملء جميع الحقول المطلوبة');
+                return;
+            }
+
+            const confirmMessage = `هل أنت متأكد من تسجيل دفعة بقيمة ${amount} ر.س؟`;
+            if (!confirm(confirmMessage)) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إضافة دفعة جديدة</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .payment-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin: 2rem auto;
+            max-width: 800px;
+        }
+
+        .payment-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .payment-body {
+            padding: 2rem;
+        }
+
+        .form-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 2px dashed #dee2e6;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--primary);
+        }
+
+        .amount-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-align: center;
+            color: var(--primary);
+            margin: 1rem 0;
+        }
+
+        .btn-payment {
+            border-radius: 25px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-payment-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-payment-success {
+            background: linear-gradient(135deg, var(--success), #2ecc71);
+            color: white;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .receipt-preview {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .receipt-header {
+            text-align: center;
+            border-bottom: 2px dashed #dee2e6;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .receipt-details {
+            margin-bottom: 1rem;
+        }
+
+        .receipt-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .receipt-total {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--success);
+            border-top: 2px dashed #dee2e6;
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .alert-custom {
+            border-radius: 15px;
+            border: none;
+            padding: 1rem 1.5rem;
+        }
+
+        .restaurant-info {
+            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--warning);
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <div class="payment-container">
+            <!-- رأس الصفحة -->
+            <div class="payment-header">
+                <h1 class="display-6 fw-bold mb-3">
+                    <i class="fas fa-money-bill-wave me-3"></i>إضافة دفعة جديدة
+                </h1>
+                <p class="lead mb-0">تسديد دفعة للمطعم وإدارة الرصيد المتبقي</p>
+            </div>
+
+            <!-- جسم الصفحة -->
+            <div class="payment-body">
+                <!-- رسائل التنبيه -->
+                <div id="alertContainer"></div>
+
+                <!-- معلومات المطعم -->
+                <div class="restaurant-info" id="restaurantInfo">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5 class="fw-bold mb-1" id="restaurantName">جاري تحميل معلومات المطعم...</h5>
+                            <p class="mb-0 text-muted" id="restaurantDetails">رقم المطعم: <span id="restaurantId">{{ restaurant_id }}</span></p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <span class="badge bg-warning fs-6 p-2" id="balanceBadge">
+                                <i class="fas fa-clock me-1"></i>جاري التحميل...
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- نموذج إضافة الدفعة -->
+                <form id="paymentForm">
+                    <div class="form-card">
+                        <h4 class="section-title mb-4">
+                            <i class="fas fa-credit-card me-2"></i>معلومات الدفعة
+                        </h4>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="amount_paid" class="form-label">المبلغ المدفوع</label>
+                                <div class="input-group">
+                                    <input type="number"
+                                           class="form-control"
+                                           id="amount_paid"
+                                           name="amount_paid"
+                                           step="0.01"
+                                           min="0.01"
+                                           required
+                                           placeholder="0.00">
+                                    <span class="input-group-text">ر.س</span>
+                                </div>
+                                <div class="form-text">أدخل المبلغ المدفوع بالريال السعودي</div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="payment_method" class="form-label">طريقة الدفع</label>
+                                <select class="form-select" id="payment_method" name="payment_method" required>
+                                    <option value="">اختر طريقة الدفع</option>
+                                    <option value="نقدي">نقدي</option>
+                                    <option value="تحويل بنكي">تحويل بنكي</option>
+                                    <option value="شيك">شيك</option>
+                                    <option value="بطاقة ائتمان">بطاقة ائتمان</option>
+                                    <option value="محفظة إلكترونية">محفظة إلكترونية</option>
+                                    <option value="آخرى">أخرى</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">ملاحظات</label>
+                            <textarea class="form-control"
+                                      id="notes"
+                                      name="notes"
+                                      rows="3"
+                                      placeholder="أضف أي ملاحظات حول الدفعة (اختياري)..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- معاينة الإيصال -->
+                    <div class="receipt-preview" id="receiptPreview">
+                        <div class="receipt-header">
+                            <h4 class="fw-bold text-primary">إيصال الدفعة</h4>
+                            <p class="text-muted mb-0" id="receiptDate"></p>
+                        </div>
+
+                        <div class="receipt-details">
+                            <div class="receipt-item">
+                                <span>رقم الإيصال:</span>
+                                <span class="fw-bold" id="previewReceiptNumber">--</span>
+                            </div>
+                            <div class="receipt-item">
+                                <span>المطعم:</span>
+                                <span id="previewRestaurantName">--</span>
+                            </div>
+                            <div class="receipt-item">
+                                <span>المبلغ المدفوع:</span>
+                                <span class="text-success fw-bold" id="previewAmount">0.00 ر.س</span>
+                            </div>
+                            <div class="receipt-item">
+                                <span>طريقة الدفع:</span>
+                                <span id="previewMethod">--</span>
+                            </div>
+                            <div class="receipt-item">
+                                <span>الرصيد المتبقي:</span>
+                                <span class="text-danger fw-bold" id="previewBalance">0.00 ر.س</span>
+                            </div>
+                        </div>
+
+                        <div class="receipt-total text-center">
+                            <div>شكراً لتعاملكم</div>
+                            <small class="text-muted">تمت العملية بنجاح</small>
+                        </div>
+                    </div>
+
+                    <!-- أزرار الإجراءات -->
+                    <div class="d-flex flex-wrap justify-content-between gap-3 mt-4">
+                        <button type="button" class="btn btn-outline-secondary btn-payment" onclick="goBack()">
+                            <i class="fas fa-arrow-right me-2"></i>رجوع
+                        </button>
+
+                        <div>
+                            <button type="button" class="btn btn-outline-primary btn-payment me-2" onclick="previewReceipt()">
+                                <i class="fas fa-eye me-2"></i>معاينة الإيصال
+                            </button>
+
+                            <button type="submit" class="btn btn-payment btn-payment-success" id="submitBtn">
+                                <i class="fas fa-check me-2"></i>تسجيل الدفعة
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- spinner التحميل -->
+                <div class="loading-spinner" id="loadingSpinner">
+                    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                        <span class="visually-hidden">جاري المعالجة...</span>
+                    </div>
+                    <p class="mt-3 text-muted">جاري تسجيل الدفعة، الرجاء الانتظار...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // بيانات المطعم (يجب استبدالها ببيانات حقيقية من الخادم)
+        const restaurantId = {{ restaurant_id }};
+        let restaurantData = null;
+
+        // تحميل بيانات المطعم عند فتح الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRestaurantData();
+            updateReceiptDate();
+        });
+
+        // تحميل بيانات المطعم
+        async function loadRestaurantData() {
+            try {
+                // هنا يمكنك إضافة استدعاء API لتحميل بيانات المطعم
+                // مؤقتاً سنستخدم بيانات وهمية
+                restaurantData = {
+                    id: restaurantId,
+                    name: `مطعم ${restaurantId}`,
+                    total_due: 15000.00,
+                    total_paid: 8000.00,
+                    balance: 7000.00
+                };
+
+                updateRestaurantInfo();
+            } catch (error) {
+                showAlert('حدث خطأ في تحميل بيانات المطعم', 'danger');
+            }
+        }
+
+        // تحديث معلومات المطعم في الواجهة
+        function updateRestaurantInfo() {
+            if (restaurantData) {
+                document.getElementById('restaurantName').textContent = restaurantData.name;
+                document.getElementById('balanceBadge').innerHTML =
+                    `<i class="fas fa-money-bill-wave me-1"></i>المتبقي: ${formatCurrency(restaurantData.balance)}`;
+
+                // تحديث معاينة الإيصال
+                document.getElementById('previewRestaurantName').textContent = restaurantData.name;
+            }
+        }
+
+        // معاينة الإيصال
+        function previewReceipt() {
+            const amount = document.getElementById('amount_paid').value;
+            const method = document.getElementById('payment_method').value;
+
+            if (!amount || !method) {
+                showAlert('يرجى ملء جميع الحقول المطلوبة أولاً', 'warning');
+                return;
+            }
+
+            const receiptPreview = document.getElementById('receiptPreview');
+            document.getElementById('previewAmount').textContent = formatCurrency(amount);
+            document.getElementById('previewMethod').textContent = method;
+
+            // حساب الرصيد المتبقي
+            const remainingBalance = restaurantData.balance - parseFloat(amount);
+            document.getElementById('previewBalance').textContent = formatCurrency(remainingBalance);
+
+            // توليد رقم إيصال مؤقت
+            document.getElementById('previewReceiptNumber').textContent = `PMT-${new Date().getTime()}`;
+
+            receiptPreview.style.display = 'block';
+        }
+
+        // إرسال النموذج
+        document.getElementById('paymentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const amount = parseFloat(formData.get('amount_paid'));
+
+            if (amount > restaurantData.balance) {
+                showAlert('المبلغ المدفوع أكبر من الرصيد المستحق!', 'danger');
+                return;
+            }
+
+            // إظهار spinner التحميل
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('submitBtn').disabled = true;
+
+            try {
+                const response = await fetch(`/add_payment/${restaurantId}`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert(result.message, 'success');
+                    document.getElementById('receiptPreview').style.display = 'block';
+                    document.getElementById('previewReceiptNumber').textContent = result.receipt_number;
+                    document.getElementById('previewBalance').textContent = formatCurrency(result.remaining_balance);
+
+                    // تحديث الرصيد
+                    restaurantData.balance = result.remaining_balance;
+                    updateRestaurantInfo();
+
+                    // إعادة تعيين النموذج
+                    setTimeout(() => {
+                        document.getElementById('paymentForm').reset();
+                        document.getElementById('receiptPreview').style.display = 'none';
+                    }, 3000);
+                } else {
+                    showAlert(result.message, 'danger');
+                }
+            } catch (error) {
+                showAlert('حدث خطأ في الاتصال بالخادم', 'danger');
+            } finally {
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('submitBtn').disabled = false;
+            }
+        });
+
+        // وظائف مساعدة
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('ar-SA', {
+                style: 'currency',
+                currency: 'SAR'
+            }).format(amount);
+        }
+
+        function updateReceiptDate() {
+            const now = new Date();
+            const dateString = now.toLocaleDateString('ar-SA', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long'
+            });
+            document.getElementById('receiptDate').textContent = dateString;
+        }
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertId = 'alert-' + Date.now();
+
+            const alertHTML = `
+                <div class="alert alert-${type} alert-custom alert-dismissible fade show" id="${alertId}">
+                    <i class="fas fa-${getAlertIcon(type)} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+
+            alertContainer.innerHTML = alertHTML;
+
+            // إزالة التنبيه تلقائياً بعد 5 ثواني
+            setTimeout(() => {
+                const alertElement = document.getElementById(alertId);
+                if (alertElement) {
+                    alertElement.remove();
+                }
+            }, 5000);
+        }
+
+        function getAlertIcon(type) {
+            const icons = {
+                'success': 'check-circle',
+                'danger': 'exclamation-triangle',
+                'warning': 'exclamation-circle',
+                'info': 'info-circle'
+            };
+            return icons[type] || 'info-circle';
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        // تحديث المبلغ المدفوع في الوقت الحقيقي
+        document.getElementById('amount_paid').addEventListener('input', function() {
+            const amount = parseFloat(this.value) || 0;
+            const remaining = restaurantData.balance - amount;
+
+            if (remaining < 0) {
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
+            }
+        });
+    </script>
+</body>
+</html>

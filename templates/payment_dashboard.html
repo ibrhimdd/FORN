@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم المدفوعات</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            height: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-title {
+            font-size: 0.9rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .card-primary { border-right: 4px solid var(--primary); }
+        .card-success { border-right: 4px solid var(--success); }
+        .card-warning { border-right: 4px solid var(--warning); }
+        .card-danger { border-right: 4px solid var(--danger); }
+
+        .section-title {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--light);
+            font-weight: 600;
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+
+        .table th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 500;
+            border: none;
+        }
+
+        .badge-pill {
+            border-radius: 10px;
+            padding: 0.5em 1em;
+        }
+
+        .progress {
+            height: 8px;
+            margin-top: 5px;
+        }
+
+        .action-btn {
+            border-radius: 20px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .quick-actions {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+    <!-- رأس الصفحة -->
+    <div class="dashboard-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="display-5 fw-bold"><i class="fas fa-chart-line me-3"></i>لوحة تحكم المدفوعات</h1>
+                    <p class="lead mb-0">نظرة عامة على أداء المدفوعات والإشعارات</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <span class="badge bg-light text-dark fs-6 p-3">
+                        <i class="fas fa-calendar-day me-2"></i>
+                        {{ now.strftime('%Y-%m-%d') }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- بطاقات الإحصائيات -->
+        <div class="row">
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card card-primary">
+                    <div class="text-center">
+                        <div class="stat-icon text-primary">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <div class="stat-number text-primary">{{ total_restaurants }}</div>
+                        <div class="stat-title">إجمالي المطاعم</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card card-success">
+                    <div class="text-center">
+                        <div class="stat-icon text-success">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="stat-number text-success">{{ "{:,.0f}".format(total_payments) }} ر.س</div>
+                        <div class="stat-title">إجمالي المدفوعات</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card card-warning">
+                    <div class="text-center">
+                        <div class="stat-icon text-warning">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stat-number text-warning">{{ "{:,.0f}".format(today_payments) }} ر.س</div>
+                        <div class="stat-title">مدفوعات اليوم</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card card-danger">
+                    <div class="text-center">
+                        <div class="stat-icon text-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-number text-danger">{{ late_restaurants }}</div>
+                        <div class="stat-title">مطاعم متأخرة</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الإجراءات السريعة -->
+        <div class="quick-actions">
+            <h3 class="section-title"><i class="fas fa-bolt me-2"></i>إجراءات سريعة</h3>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <a href="/payment_reminders" class="btn btn-primary w-100 action-btn">
+                        <i class="fas fa-bell me-2"></i>إدارة الإشعارات
+                    </a>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <a href="/" class="btn btn-success w-100 action-btn">
+                        <i class="fas fa-plus me-2"></i>الصفحة الرئسية
+                    </a>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <a href="orders" class="btn btn-warning w-100 action-btn">
+                        <i class="fas fa-file-invoice me-2"></i>اضافة طلب جديد
+                    </a>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <a href="restaurants" class="btn btn-info w-100 action-btn">
+                        <i class="fas fa-cog me-2"></i>المطاعم
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- آخر المدفوعات -->
+<div class="col-lg-8">
+    <div class="table-card">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h3 class="section-title mb-0"><i class="fas fa-history me-2"></i>آخر المدفوعات</h3>
+            <span class="badge bg-primary">{{ recent_payments|length }} معاملة</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>المطعم</th>
+                        <th>المبلغ</th>
+                        <th>التاريخ</th>
+                        <th>الحالة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in recent_payments %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="ms-3">
+                                    <p class="fw-bold mb-0">{{ payment.restaurant_name }}</p>
+                                    <small class="text-muted">{{ payment.receipt_number }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="fw-bold text-success">{{ "{:,.0f}".format(payment.amount_paid) }} ر.س</td>
+                        <td>{{ payment.payment_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <span class="badge bg-success badge-pill">مكتمل</span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('print_receipt', payment_id=payment.id) }}"
+                                   class="btn btn-outline-primary"
+                                   target="_blank"
+                                   title="طباعة الإيصال">
+                                    <i class="fas fa-print"></i>
+                                </a>
+                                <a href="{{ url_for('restaurant_payments', restaurant_id=payment.restaurant_id) }}"
+                                   class="btn btn-outline-success"
+                                   title="إدارة المدفوعات">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            <i class="fas fa-receipt fa-2x mb-3"></i>
+                            <p>لا توجد مدفوعات حديثة</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+            <!-- المطاعم الأعلى تحصيلاً -->
+            <div class="col-lg-4">
+                <div class="table-card">
+                    <div class="card-header bg-white">
+                        <h3 class="section-title mb-0"><i class="fas fa-trophy me-2"></i>الأعلى تحصيلاً</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            {% for restaurant in top_restaurants %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ restaurant.name }}</h6>
+                                    <small class="text-muted">{{ "{:,.0f}".format(restaurant.total_paid) }} ر.س</small>
+                                </div>
+                                <span class="badge bg-primary rounded-pill">{{ loop.index }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- توزيع المدفوعات -->
+                <div class="table-card mt-4">
+                    <div class="card-header bg-white">
+                        <h3 class="section-title mb-0"><i class="fas fa-chart-pie me-2"></i>ملخص الأداء</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>مطاعم نشطة</span>
+                            <span class="fw-bold">{{ total_restaurants - late_restaurants }}</span>
+                        </div>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" style="width: {{ ((total_restaurants - late_restaurants) / total_restaurants * 100) if total_restaurants > 0 else 0 }}%"></div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>مطاعم متأخرة</span>
+                            <span class="fw-bold text-danger">{{ late_restaurants }}</span>
+                        </div>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-danger" style="width: {{ (late_restaurants / total_restaurants * 100) if total_restaurants > 0 else 0 }}%"></div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <div class="row">
+                                <div class="col-6">
+                                    <h5 class="text-success">{{ "{:,.0f}".format(today_payments) }} ر.س</h5>
+                                    <small>مدفوعات اليوم</small>
+                                </div>
+                                <div class="col-6">
+                                    <h5 class="text-primary">{{ "{:,.0f}".format(total_payments) }} ر.س</h5>
+                                    <small>إجمالي المتحصل</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- التذييل -->
+    <footer class="bg-dark text-light text-center py-3 mt-5">
+        <div class="container">
+            <p class="mb-0">نظام إدارة المدفوعات &copy; {{ now.strftime('%Y') }}</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>التقارير</title>
+</head>
+<body>
+    <h2>التقارير</h2>
+    <table border="1">
+        <tr>
+            <th>ID الطلب</th>
+            <th>اسم العميل</th>
+            <th>المطعم</th>
+            <th>إجمالي</th>
+        </tr>
+        {% for order in orders %}
+        <tr>
+            <td>{{ order[0] }}</td>
+            <td>{{ order[1] }}</td>
+            <td>{{ order[2] }}</td>
+            <td>{{ order[3] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

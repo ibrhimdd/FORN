@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إيصال دفع - {{ payment.restaurant_name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f5f5f5;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .receipt-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .receipt-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .receipt-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcf7f);
+        }
+
+        .receipt-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .receipt-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .receipt-number {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        .receipt-body {
+            padding: 25px;
+        }
+
+        .info-section {
+            margin-bottom: 25px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .amount-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .amount-label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .amount-value {
+            color: #2c5aa0;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .notes-section {
+            background: #fff9e6;
+            padding: 15px;
+            border-radius: 8px;
+            border-right: 4px solid #ffd93d;
+            margin-top: 20px;
+        }
+
+        .notes-label {
+            color: #666;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .notes-content {
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .receipt-footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .footer-text {
+            color: #666;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .print-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .print-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .stamp {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #ff6b6b;
+            font-size: 12px;
+            font-weight: bold;
+            opacity: 0.7;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .receipt-container {
+                box-shadow: none;
+                max-width: 100%;
+            }
+
+            .print-btn {
+                display: none;
+            }
+        }
+
+        .status-paid {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .payment-method {
+            display: inline-block;
+            background: #e7f3ff;
+            color: #2c5aa0;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt-container">
+        <div class="receipt-header">
+            <div class="stamp">مدفوع</div>
+            <div class="receipt-title">إيصال دفع</div>
+            <div class="receipt-subtitle">نظام إدارة المطاعم</div>
+            <div class="receipt-number">{{ payment.receipt_number }}</div>
+        </div>
+
+        <div class="receipt-body">
+            <div class="info-section">
+                <div class="info-row">
+                    <span class="info-label">اسم المطعم:</span>
+                    <span class="info-value">{{ payment.restaurant_name }}</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">رقم الإيصال:</span>
+                    <span class="info-value">{{ payment.receipt_number }}</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">تاريخ الدفع:</span>
+                    <span class="info-value">{{ payment.payment_date.strftime('%Y-%m-%d %H:%M') }}</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">طريقة الدفع:</span>
+                    <span class="payment-method">{{ payment.payment_method }}</span>
+                </div>
+            </div>
+
+            <div class="amount-section">
+                <div class="amount-label">المبلغ المدفوع</div>
+                <div class="amount-value">{{ "%.2f"|format(payment.amount_paid) }} ج.م</div>
+            </div>
+
+            <div class="info-section">
+                <div class="info-row">
+                    <span class="info-label">الرصيد السابق:</span>
+                    <span class="info-value">{{ "%.2f"|format(payment.remaining_balance + payment.amount_paid) }} ج.م</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">المبلغ المدفوع:</span>
+                    <span class="info-value status-paid">- {{ "%.2f"|format(payment.amount_paid) }} ج.م</span>
+                </div>
+
+                <div class="info-row" style="border-top: 2px solid #333; padding-top: 15px; margin-top: 10px;">
+                    <span class="info-label" style="font-size: 16px;">الرصيد الحالي:</span>
+                    <span class="info-value" style="font-size: 16px; color: #2c5aa0;">{{ "%.2f"|format(payment.remaining_balance) }} ج.م</span>
+                </div>
+            </div>
+
+            {% if payment.notes %}
+            <div class="notes-section">
+                <div class="notes-label">ملاحظات:</div>
+                <div class="notes-content">{{ payment.notes }}</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="receipt-footer">
+            <div class="footer-text">
+                شكراً لتعاملكم معنا<br>
+                هذا الإيصال يمثل سند استلام رسمي<br>
+                للاستفسار: 01234567890
+            </div>
+
+            <button class="print-btn" onclick="window.print()">
+                🖨️ طباعة الإيصال
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // طباعة تلقائية عند فتح الصفحة (اختياري)
+        window.onload = function() {
+            // يمكنك تفعيل هذا إذا أردت الطباعة التلقائية
+            // setTimeout(() => { window.print(); }, 1000);
+        };
+
+        // إضافة تأثير عند النقر على زر الطباعة
+        document.querySelector('.print-btn').addEventListener('click', function() {
+            this.style.background = 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)';
+            setTimeout(() => {
+                window.print();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

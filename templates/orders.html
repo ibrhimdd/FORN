@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الطلبات والتحصيل</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .welcome-text {
+            color: #2c3e50;
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .payment-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .payment-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .filter-form {
+            background-color: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .form-group {
+            display: inline-block;
+            margin-left: 20px;
+            margin-bottom: 15px;
+            vertical-align: top;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        select, input[type="date"] {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            min-width: 200px;
+            background-color: white;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-top: 23px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .orders-table th {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 18px 15px;
+            text-align: right;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .orders-table td {
+            padding: 15px;
+            border-bottom: 1px solid #ecf0f1;
+            text-align: right;
+        }
+
+        .orders-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .orders-table tr:nth-child(even) {
+            background-color: #fafbfc;
+        }
+
+        .payment-btn {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin: 3px;
+            font-weight: 600;
+        }
+
+        .payment-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+        }
+
+        .btn-account {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+
+        .btn-account:hover {
+            background: linear-gradient(135deg, #2980b9, #3498db);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .balance-positive {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .balance-zero {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .loading {
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        .action-links {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 25px;
+            border-top: 1px solid #ecf0f1;
+        }
+
+        .action-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 0 12px;
+            transition: all 0.3s;
+        }
+
+        .action-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.4);
+        }
+
+        .products-list {
+            max-width: 300px;
+            line-height: 1.8;
+        }
+
+        .total-amount {
+            color: #2c3e50;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        /* مودال التحصيل */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            animation: modalSlideIn 0.3s ease-out;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 25px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.4rem;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .close {
+            color: white;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close:hover {
+            color: #ecf0f1;
+        }
+
+        .form-group-modal {
+            margin-bottom: 25px;
+        }
+
+        .form-group-modal label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .amount-display {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border: 1px solid #dee2e6;
+        }
+
+        .amount-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding: 8px 0;
+            font-size: 1rem;
+        }
+
+        .amount-row.total {
+            border-top: 2px solid #3498db;
+            padding-top: 15px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #2c3e50;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.4);
+        }
+
+        .message {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: center;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .form-group {
+                display: block;
+                margin-left: 0;
+                margin-bottom: 20px;
+            }
+
+            select, input[type="date"] {
+                width: 100%;
+            }
+
+            .orders-table {
+                font-size: 14px;
+            }
+
+            .orders-table th,
+            .orders-table td {
+                padding: 12px 8px;
+            }
+
+            .payment-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .action-links {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .action-link {
+                margin: 0;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="welcome-text">الطلبات والتحصيل</h1>
+            <p class="subtitle">إدارة الطلبات وعمليات التحصيل للمطاعم</p>
+        </div>
+
+        <!-- رسائل التنبيه -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- قسم إحصائيات التحصيل -->
+        <div class="payment-section">
+            <h3 style="margin-bottom: 20px; color: white; text-align: center;">
+                <i class="fas fa-chart-line"></i>
+                إحصائيات التحصيل
+            </h3>
+            <div class="payment-stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalDue">0</div>
+                    <div>إجمالي المستحق</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalPaid">0</div>
+                    <div>إجمالي المدفوع</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalBalance">0</div>
+                    <div>إجمالي المتبقي</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="todayPayments">0</div>
+                    <div>مدفوعات اليوم</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- فلترة الطلبات -->
+        <form method="POST" class="filter-form">
+            <div class="form-group">
+                <label>اختر المطعم:</label>
+                <select name="restaurant_id">
+                    <option value="">جميع المطاعم</option>
+                    {% for r in restaurants %}
+                        <option value="{{ r.id }}" {% if selected_restaurant == r.id|string %}selected{% endif %}>
+                            {{ r.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>تاريخ الطلب:</label>
+                <input type="date" name="order_date" value="{{ selected_date if selected_date else '' }}">
+            </div>
+
+            <button type="submit" class="btn">
+                <i class="fas fa-filter"></i>
+                تصفية الطلبات
+            </button>
+        </form>
+
+        <!-- جدول الطلبات -->
+        <table class="orders-table">
+            <thead>
+                <tr>
+                    <th>المطعم</th>
+                    <th>تاريخ الطلب</th>
+                    <th>المنتجات المطلوبة</th>
+                    <th>إجمالي الكمية</th>
+                    <th>إجمالي المبلغ</th>
+                    <th>المدفوع</th>
+                    <th>المتبقي</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td><strong>{{ order.restaurant_name }}</strong></td>
+                    <td>{{ order.order_date }}</td>
+                    <td class="products-list">{{ order.products_details }}</td>
+                    <td>{{ order.total_quantity }}</td>
+                    <td class="total-amount">{{ order.total_amount }} جنيه</td>
+                    <td>
+                        <span class="total-paid" data-restaurant="{{ order.restaurant_id }}">
+                            <span class="loading">جاري التحميل...</span>
+                        </span>
+                    </td>
+                    <td>
+                        <span class="remaining-balance" data-restaurant="{{ order.restaurant_id }}">
+                            <span class="loading">جاري التحميل...</span>
+                        </span>
+                    </td>
+                    <td>
+                        {% if order.restaurant_id %}
+                        <button class="payment-btn"
+                                onclick="openPaymentModal({{ order.restaurant_id }}, '{{ order.restaurant_name }}')">
+                            <i class="fas fa-credit-card"></i>
+                            تحصيل
+                        </button>
+                        <a href="/account_statement/{{ order.restaurant_id }}"
+                           class="payment-btn btn-account">
+                            <i class="fas fa-file-invoice"></i>
+                            كشف حساب
+                        </a>
+                        {% else %}
+                        <span style="color: #e74c3c; font-size: 0.8rem;">لا يوجد معرف</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 40px; color: #7f8c8d;">
+                        <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 15px; display: block;"></i>
+                        لا توجد طلبات لعرضها
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- إجماليات -->
+        <div style="margin-top: 25px; padding: 20px; background: linear-gradient(135deg, #2c3e50, #34495e); color: white; border-radius: 10px; text-align: center;">
+            <strong style="font-size: 1.1rem;">
+                إجمالي الطلبات: {{ orders|length }} |
+                إجمالي الكميات: {{ orders|sum(attribute='total_quantity') }} |
+                إجمالي المبالغ: {{ orders|sum(attribute='total_amount') }} جنيه
+            </strong>
+        </div>
+
+        <div class="action-links">
+            <a href="{{ url_for('add_order') }}" class="action-link">
+                <i class="fas fa-cart-plus"></i>
+                إضافة طلب جديد
+            </a>
+            <a href="/payment_reports" class="action-link">
+                <i class="fas fa-chart-bar"></i>
+                تقارير التحصيل
+            </a>
+            <a href="/payment_reminders" class="action-link">
+                <i class="fas fa-bell"></i>
+                الإشعارات
+            </a>
+            <a href="{{ url_for('index') }}" class="action-link">
+                <i class="fas fa-home"></i>
+                الصفحة الرئيسية
+            </a>
+        </div>
+    </div>
+
+    <!-- مودال التحصيل -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">تحصيل مدفوعات</h3>
+                <span class="close" onclick="closePaymentModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="amount-display">
+                    <div class="amount-row">
+                        <span>المطعم:</span>
+                        <span id="modalRestaurantName">-</span>
+                    </div>
+                    <div class="amount-row">
+                        <span>إجمالي المستحق:</span>
+                        <span id="modalTotalDue">0 جنيه</span>
+                    </div>
+                    <div class="amount-row">
+                        <span>المدفوع سابقاً:</span>
+                        <span id="modalTotalPaid">0 جنيه</span>
+                    </div>
+                    <div class="amount-row total">
+                        <span>المتبقي:</span>
+                        <span id="modalRemainingBalance">0 جنيه</span>
+                    </div>
+                </div>
+
+                <form id="paymentForm">
+                    <input type="hidden" id="restaurantId" name="restaurant_id">
+
+                    <div class="form-group-modal">
+                        <label for="amount_paid">المبلغ المدفوع:</label>
+                        <input type="number" id="amount_paid" name="amount_paid" class="form-control"
+                               step="0.01" min="0.01" required placeholder="أدخل المبلغ المدفوع">
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label for="payment_method">طريقة الدفع:</label>
+                        <select id="payment_method" name="payment_method" class="form-control" required>
+                            <option value="كاش">كاش</option>
+                            <option value="تحويل">تحويل بنكي</option>
+                            <option value="شيك">شيك</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label for="notes">ملاحظات (اختياري):</label>
+                        <textarea id="notes" name="notes" class="form-control" rows="3"
+                                  placeholder="أي ملاحظات إضافية حول الدفع..."></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-check-circle"></i>
+                        تأكيد الدفع وتسجيل الإيصال
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // دالة فتح مودال التحصيل
+        function openPaymentModal(restaurantId, restaurantName) {
+            console.log('فتح مودال التحصيل للمطعم:', restaurantId, restaurantName);
+
+            document.getElementById('modalTitle').textContent = `تحصيل مدفوعات - ${restaurantName}`;
+            document.getElementById('modalRestaurantName').textContent = restaurantName;
+            document.getElementById('restaurantId').value = restaurantId;
+
+            // جلب إحصائيات المطعم
+            fetch(`/api/restaurant_stats/${restaurantId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('بيانات الإحصائيات:', data);
+
+                    document.getElementById('modalTotalDue').textContent = data.total_due.toFixed(2) + ' جنيه';
+                    document.getElementById('modalTotalPaid').textContent = data.total_paid.toFixed(2) + ' جنيه';
+                    document.getElementById('modalRemainingBalance').textContent = data.remaining_balance.toFixed(2) + ' جنيه';
+
+                    // تحديث القيم في الصف
+                    updateRestaurantRow(restaurantId, data);
+                })
+                .catch(error => {
+                    console.error('خطأ في جلب البيانات:', error);
+                    alert('حدث خطأ في جلب بيانات المطعم. يرجى المحاولة مرة أخرى.');
+                });
+
+            document.getElementById('paymentModal').style.display = 'block';
+        }
+
+        // دالة تحديث صف المطعم
+        function updateRestaurantRow(restaurantId, data) {
+            const paidElement = document.querySelector(`.total-paid[data-restaurant="${restaurantId}"]`);
+            const balanceElement = document.querySelector(`.remaining-balance[data-restaurant="${restaurantId}"]`);
+
+            if (paidElement && balanceElement) {
+                paidElement.innerHTML = data.total_paid.toFixed(2) + ' جنيه';
+                balanceElement.innerHTML = data.remaining_balance.toFixed(2) + ' جنيه';
+
+                if (data.remaining_balance > 0) {
+                    balanceElement.className = 'remaining-balance balance-positive';
+                } else {
+                    balanceElement.className = 'remaining-balance balance-zero';
+                }
+            }
+        }
+
+        // دالة إغلاق المودال
+        function closePaymentModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+            document.getElementById('paymentForm').reset();
+        }
+
+        // إرسال نموذج الدفع
+        document.getElementById('paymentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const restaurantId = document.getElementById('restaurantId').value;
+            const amountPaid = document.getElementById('amount_paid').value;
+
+            if (!amountPaid || parseFloat(amountPaid) <= 0) {
+                alert('يرجى إدخال مبلغ صحيح للدفع');
+                return;
+            }
+
+            const submitBtn = this.querySelector('.submit-btn');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري المعالجة...';
+            submitBtn.disabled = true;
+
+            fetch(`/add_payment/${restaurantId}`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    closePaymentModal();
+                    // تحديث الصفحة بعد ثانيتين
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    alert(data.message);
+                    submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> تأكيد الدفع وتسجيل الإيصال';
+                    submitBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('حدث خطأ أثناء إرسال البيانات. يرجى المحاولة مرة أخرى.');
+                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> تأكيد الدفع وتسجيل الإيصال';
+                submitBtn.disabled = false;
+            });
+        });
+
+        // إغلاق المودال عند النقر خارج المحتوى
+        window.onclick = function(event) {
+            const modal = document.getElementById('paymentModal');
+            if (event.target == modal) {
+                closePaymentModal();
+            }
+        }
+
+        // تحميل إحصائيات جميع المطاعم عند فتح الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('جاري تحميل إحصائيات المطاعم...');
+
+            document.querySelectorAll('.remaining-balance').forEach(element => {
+                const restaurantId = element.getAttribute('data-restaurant');
+                if (restaurantId && restaurantId !== 'None') {
+                    fetch(`/api/restaurant_stats/${restaurantId}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            updateRestaurantRow(restaurantId, data);
+                        })
+                        .catch(error => {
+                            console.error('Error loading stats for restaurant:', restaurantId, error);
+                            element.innerHTML = '<span style="color: #e74c3c;">خطأ في التحميل</span>';
+                        });
+                }
+            });
+
+            // تحميل الإحصائيات العامة
+            loadGeneralStats();
+        });
+
+        // دالة تحميل الإحصائيات العامة
+        function loadGeneralStats() {
+            // يمكن إضافة API منفصل للإحصائيات العامة هنا
+            // مؤقتاً نستخدم قيم افتراضية
+            setTimeout(() => {
+                document.getElementById('totalDue').textContent = '0';
+                document.getElementById('totalPaid').textContent = '0';
+                document.getElementById('totalBalance').textContent = '0';
+                document.getElementById('todayPayments').textContent = '0';
+            }, 1000);
+        }
+
+        // إضافة تأثيرات للجدول
+        document.addEventListener('DOMContentLoaded', function() {
+            const rows = document.querySelectorAll('.orders-table tr');
+            rows.forEach((row, index) => {
+                if (index > 0) { // تخطى رأس الجدول
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateX(20px)';
+
+                    setTimeout(() => {
+                        row.style.transition = 'all 0.5s ease';
+                        row.style.opacity = '1';
+                        row.style.transform = 'translateX(0)';
+                    }, index * 100);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

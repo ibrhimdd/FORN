@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إضافة مطعم</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            direction: rtl;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+            font-size: 2.2rem;
+        }
+
+        h3 {
+            color: #3498db;
+            margin: 25px 0 20px;
+            padding-right: 15px;
+            border-right: 4px solid #3498db;
+            font-size: 1.4rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background-color: #fafbfc;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            border-color: #3498db;
+            background-color: white;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .products-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #e9ecef;
+        }
+
+        .product-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            border: 1px solid #e1e8ed;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+
+        .product-item:hover {
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .product-item input {
+            flex: 1;
+        }
+
+        .remove-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 50px;
+        }
+
+        .remove-btn:hover {
+            background-color: #c0392b;
+            transform: scale(1.05);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 28px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-align: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .btn i {
+            font-size: 18px;
+        }
+
+        .btn-secondary {
+            background-color: #95a5a6;
+        }
+
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            width: 100%;
+            margin-top: 30px;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(135deg, #27ae60, #219653);
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(46, 204, 113, 0.4);
+        }
+
+        .buttons-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+                margin: 15px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .product-item {
+                flex-direction: column;
+            }
+
+            .buttons-container {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: 600;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .product-counter {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            text-align: center;
+            line-height: 25px;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+
+        .form-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-utensils"></i> إضافة مطعم جديد</h1>
+
+        <!-- رسائل التنبيه -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="/add_restaurant" id="restaurantForm">
+            <div class="form-group">
+                <label for="restaurant-name"><i class="fas fa-store"></i> اسم المطعم:</label>
+                <input type="text" id="restaurant-name" name="name" required placeholder="أدخل اسم المطعم هنا...">
+            </div>
+
+            <div class="products-section">
+                <div class="form-header">
+                    <h3><i class="fas fa-list"></i> قائمة المنتجات</h3>
+                    <span class="product-counter" id="productCount">1</span>
+                </div>
+
+                <div id="products">
+                    <div class="product-item fade-in">
+                        <input type="text" name="product_name[]" placeholder="اسم المنتج (مثال: بيتزا)" required>
+                        <input type="number" name="product_price[]" placeholder="السعر (مثال: 25.00)" required min="0" step="0.01">
+                        <button type="button" class="remove-btn" onclick="removeProduct(this)" title="حذف المنتج">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="buttons-container">
+                    <button type="button" class="btn btn-secondary" onclick="addProduct()">
+                        <i class="fas fa-plus"></i> إضافة منتج آخر
+                    </button>
+                    <button type="button" class="btn" onclick="clearForm()">
+                        <i class="fas fa-broom"></i> مسح النموذج
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn submit-btn">
+                <i class="fas fa-save"></i> إضافة المطعم والمنتجات
+            </button>
+        </form>
+    </div>
+
+    <script>
+        function updateProductCount() {
+            const count = document.querySelectorAll('.product-item').length;
+            document.getElementById('productCount').textContent = count;
+        }
+
+        function addProduct() {
+            let div = document.createElement("div");
+            div.className = "product-item fade-in";
+            div.innerHTML = `
+                <input type="text" name="product_name[]" placeholder="اسم المنتج" required>
+                <input type="number" name="product_price[]" placeholder="السعر" required min="0" step="0.01">
+                <button type="button" class="remove-btn" onclick="removeProduct(this)" title="حذف المنتج">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            document.getElementById("products").appendChild(div);
+            updateProductCount();
+        }
+
+        function removeProduct(button) {
+            if (document.querySelectorAll('.product-item').length > 1) {
+                button.parentElement.style.animation = 'fadeIn 0.3s reverse';
+                setTimeout(() => {
+                    button.parentElement.remove();
+                    updateProductCount();
+                }, 300);
+            } else {
+                alert("يجب أن يحتوي المطعم على منتج واحد على الأقل");
+            }
+        }
+
+        function clearForm() {
+            if (confirm("هل أنت متأكد من رغبتك في مسح جميع البيانات؟")) {
+                document.getElementById('restaurantForm').reset();
+                const productsContainer = document.getElementById('products');
+                productsContainer.innerHTML = `
+                    <div class="product-item fade-in">
+                        <input type="text" name="product_name[]" placeholder="اسم المنتج" required>
+                        <input type="number" name="product_price[]" placeholder="السعر" required min="0" step="0.01">
+                        <button type="button" class="remove-btn" onclick="removeProduct(this)" title="حذف المنتج">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                updateProductCount();
+            }
+        }
+
+        // التحقق من النموذج قبل الإرسال
+        document.getElementById('restaurantForm').addEventListener('submit', function(e) {
+            const productNames = document.getElementsByName('product_name[]');
+            const productPrices = document.getElementsByName('product_price[]');
+            let hasError = false;
+
+            for (let i = 0; i < productNames.length; i++) {
+                if (!productNames[i].value.trim()) {
+                    productNames[i].focus();
+                    hasError = true;
+                    break;
+                }
+
+                if (!productPrices[i].value || parseFloat(productPrices[i].value) < 0) {
+                    productPrices[i].focus();
+                    hasError = true;
+                    break;
+                }
+            }
+
+            if (hasError) {
+                e.preventDefault();
+                alert('يرجى ملء جميع حقول المنتجات بشكل صحيح');
+            }
+        });
+
+        // تحديث عداد المنتجات عند التحميل
+        document.addEventListener('DOMContentLoaded', updateProductCount);
+    </script>
+</body>
+</html>

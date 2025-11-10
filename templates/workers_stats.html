@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إحصائيات العمال</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-industry"></i> نظام إدارة العمال
+            </a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- رسائل التنبيه -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- الإحصائيات العامة -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center bg-primary text-white">
+                    <div class="card-body">
+                        <h6 class="card-title">إجمالي العمال</h6>
+                        <h4>{{ total_workers }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center bg-success text-white">
+                    <div class="card-body">
+                        <h6 class="card-title">العمال النشطين</h6>
+                        <h4>{{ monthly_stats.active_workers or 0 }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center bg-info text-white">
+                    <div class="card-body">
+                        <h6 class="card-title">كمية الشهر</h6>
+                        <h4>{{ "{:,}".format(monthly_stats.monthly_quantity or 0) }}</h4>
+                        <small>رغيف</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center bg-warning text-white">
+                    <div class="card-body">
+                        <h6 class="card-title">دخل الشهر</h6>
+                        <h4>{{ "%.2f"|format(monthly_stats.monthly_income or 0) }} جنيه</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- أفضل العمال -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-trophy"></i> أفضل العمال لهذا الشهر ({{ current_month }})
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if top_workers %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>الترتيب</th>
+                                <th>اسم العامل</th>
+                                <th>الكمية</th>
+                                <th>إجمالي الدخل</th>
+                                <th>صافي الدخل</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for worker in top_workers %}
+                            <tr>
+                                <td>
+                                    {% if loop.index == 1 %}
+                                    <span class="badge bg-warning text-dark">🥇 الأول</span>
+                                    {% elif loop.index == 2 %}
+                                    <span class="badge bg-secondary">🥈 الثاني</span>
+                                    {% elif loop.index == 3 %}
+                                    <span class="badge bg-danger">🥉 الثالث</span>
+                                    {% else %}
+                                    <span class="badge bg-light text-dark">{{ loop.index }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('worker_profile', worker_id=worker.id) }}" class="text-decoration-none">
+                                        {{ worker.name }}
+                                    </a>
+                                </td>
+                                <td>{{ "{:,}".format(worker.total_quantity or 0) }} رغيف</td>
+                                <td class="text-success">{{ "%.2f"|format(worker.total_income or 0) }} جنيه</td>
+                                <td class="text-warning">{{ "%.2f"|format(worker.net_income or 0) }} جنيه</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center">لا توجد بيانات لهذا الشهر</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ملخص الأداء -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-chart-pie"></i> ملخص الشهر
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>إجمالي الكمية:</span>
+                                <strong>{{ "{:,}".format(monthly_stats.monthly_quantity or 0) }} رغيف</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>إجمالي الدخل:</span>
+                                <strong class="text-success">{{ "%.2f"|format(monthly_stats.monthly_income or 0) }} جنيه</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>إجمالي المصاريف:</span>
+                                <strong class="text-danger">{{ "%.2f"|format(monthly_stats.monthly_expenses or 0) }} جنيه</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>صافي الدخل:</span>
+                                <strong class="text-warning">
+                                    {{ "%.2f"|format((monthly_stats.monthly_income or 0) - (monthly_stats.monthly_expenses or 0)) }} جنيه
+                                </strong>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-info-circle"></i> معلومات سريعة
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-lightbulb"></i>
+                            <strong>نصائح:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>يمكنك إضافة عمل يومي من صفحة "إضافة عمل يومي"</li>
+                                <li>يمكنك متابعة أداء كل عامل من صفحته الخاصة</li>
+                                <li>استخدم الفلترة في صفحة "العمل اليومي" لمشاهدة بيانات محددة</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- روابط سريعة -->
+        <div class="row mt-3">
+            <div class="col-md-4">
+                <a href="{{ url_for('workers_management') }}" class="btn btn-primary w-100">
+                    <i class="fas fa-users"></i> إدارة العمال
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{{ url_for('add_daily_work') }}" class="btn btn-success w-100">
+                    <i class="fas fa-plus"></i> إضافة عمل يومي
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{{ url_for('workers_daily_work') }}" class="btn btn-info w-100">
+                    <i class="fas fa-list"></i> العمل اليومي
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
