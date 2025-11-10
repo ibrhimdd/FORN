@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 
 
 flask_app = Flask(__name__)
-modal_app = modal.App("patient-sparkle")
+
 flask_app.secret_key = 'your-secret-key-123'
 
 import os
@@ -2145,10 +2145,11 @@ def debug_worker(worker_id):
     })
 
 
-@app.function()
-@modal.wsgi_app()
-def run_flask():
-    return flask_app
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    flask_app.run(host='0.0.0.0', port=port, debug=False)
 
 
 
