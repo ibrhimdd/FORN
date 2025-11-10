@@ -4,7 +4,9 @@ from datetime import datetime
 import os
 from urllib.parse import urlparse
 
-app = Flask(__name__)
+
+flask_app = Flask(__name__)
+modal_app = modal.App("patient-sparkle")
 app.secret_key = 'your-secret-key-123'
 
 import os
@@ -2146,4 +2148,5 @@ def debug_worker(worker_id):
 @modal.wsgi_app()
 def run_flask():
     return flask_app
+
 
