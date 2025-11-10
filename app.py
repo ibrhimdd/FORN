@@ -2141,6 +2141,9 @@ def debug_worker(worker_id):
         'totals': totals
     })
 
-if __name__ == "__main__":
 
-    app.run(debug=True)
+@app.function()
+@modal.wsgi_app()
+def run_flask():
+    return flask_app
+
