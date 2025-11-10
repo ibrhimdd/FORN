@@ -7,38 +7,102 @@ from urllib.parse import urlparse
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-123'
 
+import os
+from urllib.parse import urlparse
+import mysql.connector
+from mysql.connector import Error
 
-# الاتصال بقاعدة البيانات - (الدالة المُعدلة)
 def get_db_connection():
-    # محاولة قراءة متغير البيئة DATABASE_URL (مطلوب لـ Render)
+    connection = None
+    
+    # المحاولة 1: CloudClusters (المتغيرات المنفصلة)
+    db_host = os.environ.get('DB_HOST')
+    db_user = os.environ.get('DB_USER') 
+    db_password = os.environ.get('DB_PASSWORD')
+    db_name = os.environ.get('DB_NAME')
+    db_port = os.environ.get('DB_PORT', '3306')
+    
+    if db_host and db_user and db_password:
+        print(f"🔗 جرب الاتصال بـ CloudClusters: {db_host}")
+        
+        try:
+            connection = mysql.connector.connect(
+                host=db_host,
+                user=db_user,
+                password=db_password,
+                database=db_name,
+                port=int(db_port),
+                ssl_disabled=True,
+                connect_timeout=10,
+                autocommit=True
+            )
+            print("✅ تم الاتصال بـ CloudClusters بنجاح!")
+            return connection
+        except Error as e:
+            print(f"❌ فشل CloudClusters: {e}")
+    
+    # المحاولة 2: DATABASE_URL
     database_url = os.environ.get('DATABASE_URL')
-
-    if database_url:
-        # تحليل سلسلة الاتصال (مثل: mysql://user:pass@host:port/db_name)
-        url = urlparse(database_url)
-
-        # استخراج المنفذ (إذا لم يوجد في السلسلة، يكون None)
-        db_port = url.port if url.port else 3306
-
-        print(f"Connecting to remote DB: {url.hostname}:{db_port} as {url.username}")
-
-        return mysql.connector.connect(
-            host=url.hostname,
-            user=url.username,
-            password=url.password,
-            database=url.path[1:],  # [1:] لإزالة أول '/'
-            port=db_port,
-            # (اختياري/مهم) قد تحتاج CloudClusters إلى SSL:
-            ssl_disabled=True  # جرب تفعيلها/إلغاء تفعيلها حسب متطلبات السيرفر
-        )
-    else:
-        # استخدام البيانات المحلية (للتشغيل على جهازك)
+    if database_url and 'mysql://' in database_url:
+        try:
+            url = urlparse(database_url)
+            print(f"🔗 جرب الاتصال via DATABASE_URL: {url.hostname}")
+            
+            connection = mysql.connector.connect(
+                host=url.hostname,
+                user=url.username,
+                password=url.password,
+                database=url.path[1:],
+                port=url.port or 3306,
+                ssl_disabled=True
+            )
+            print("✅ تم الاتصال via DATABASE_URL بنجاح!")
+            return connection
+        except Error as e:
+            print(f"❌ فشل DATABASE_URL: {e}")
+    
+    # المحاولة 3: الإعدادات المحلية
+    print("🖥️  استخدام قاعدة البيانات المحلية")
+    try:
         return mysql.connector.connect(
             host="localhost",
             user="root",
             password="",
-            database="forn"
+            database="forn",
+            autocommit=True
         )
+    except Error as e:
+        print(f"❌ فشل الاتصال المحلي: {e}")
+        raise Exception("فشل جميع محاولات الاتصال بقاعدة البيانات")
+
+@app.route('/test-connection')
+def test_connection():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # اختبار الاتصال
+        cursor.execute("SELECT VERSION()")
+        version = cursor.fetchone()
+        
+        # اختبار الجداول
+        cursor.execute("SHOW TABLES")
+        tables = cursor.fetchall()
+        
+        cursor.close()
+        conn.close()
+        
+        return f"""
+        <h2>✅ اختبار الاتصال ناجح!</h2>
+        <p><strong>إصدار MySQL:</strong> {version[0]}</p>
+        <p><strong>الجداول الموجودة:</strong> {len(tables)}</p>
+        <ul>
+            {''.join([f'<li>{table[0]}</li>' for table in tables])}
+        </ul>
+        """
+        
+    except Exception as e:
+        return f"<h2>❌ فشل الاختبار:</h2><p>{str(e)}</p>"
 
 
 # إضافة context processor لتمرير now تلقائياً لجميع القوالب
@@ -2078,4 +2142,5 @@ def debug_worker(worker_id):
     })
 
 if __name__ == "__main__":
+
     app.run(debug=True)
