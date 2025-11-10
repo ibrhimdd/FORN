@@ -14,98 +14,20 @@ import os
 from urllib.parse import urlparse
 import mysql.connector
 from mysql.connector import Error
-
 def get_db_connection():
-    connection = None
-    
-    # المحاولة 1: CloudClusters (المتغيرات المنفصلة)
-    db_host = os.environ.get('DB_HOST')
-    db_user = os.environ.get('DB_USER') 
-    db_password = os.environ.get('DB_PASSWORD')
-    db_name = os.environ.get('DB_NAME')
-    db_port = os.environ.get('DB_PORT', '3306')
-    
-    if db_host and db_user and db_password:
-        print(f"🔗 جرب الاتصال بـ CloudClusters: {db_host}")
-        
-        try:
-            connection = mysql.connector.connect(
-                host=db_host,
-                user=db_user,
-                password=db_password,
-                database=db_name,
-                port=int(db_port),
-                ssl_disabled=True,
-                connect_timeout=10,
-                autocommit=True
-            )
-            print("✅ تم الاتصال بـ CloudClusters بنجاح!")
-            return connection
-        except Error as e:
-            print(f"❌ فشل CloudClusters: {e}")
-    
-    # المحاولة 2: DATABASE_URL
-    database_url = os.environ.get('DATABASE_URL')
-    if database_url and 'mysql://' in database_url:
-        try:
-            url = urlparse(database_url)
-            print(f"🔗 جرب الاتصال via DATABASE_URL: {url.hostname}")
-            
-            connection = mysql.connector.connect(
-                host=url.hostname,
-                user=url.username,
-                password=url.password,
-                database=url.path[1:],
-                port=url.port or 3306,
-                ssl_disabled=True
-            )
-            print("✅ تم الاتصال via DATABASE_URL بنجاح!")
-            return connection
-        except Error as e:
-            print(f"❌ فشل DATABASE_URL: {e}")
-    
-    # المحاولة 3: الإعدادات المحلية
-    print("🖥️  استخدام قاعدة البيانات المحلية")
     try:
-        return mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="",
-            database="forn",
-            autocommit=True
+        connection = mysql.connector.connect(
+            host='interchange.proxy.rlwy.net',  # ⬅️ الخادم العام
+            user='root',
+            password='fZMYuRagQXgSdeYQbJpEIztYsMtIxRrQ',
+            database='fornElkhooly',  # ⬅️ اسم القاعدة الجديد
+            port=48065  # ⬅️ البورت الصحيح
         )
-    except Error as e:
-        print(f"❌ فشل الاتصال المحلي: {e}")
-        raise Exception("فشل جميع محاولات الاتصال بقاعدة البيانات")
-
-@app.route('/test-connection')
-def test_connection():
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        # اختبار الاتصال
-        cursor.execute("SELECT VERSION()")
-        version = cursor.fetchone()
-        
-        # اختبار الجداول
-        cursor.execute("SHOW TABLES")
-        tables = cursor.fetchall()
-        
-        cursor.close()
-        conn.close()
-        
-        return f"""
-        <h2>✅ اختبار الاتصال ناجح!</h2>
-        <p><strong>إصدار MySQL:</strong> {version[0]}</p>
-        <p><strong>الجداول الموجودة:</strong> {len(tables)}</p>
-        <ul>
-            {''.join([f'<li>{table[0]}</li>' for table in tables])}
-        </ul>
-        """
-        
+        print("✅ تم الاتصال بقاعدة البيانات بنجاح")
+        return connection
     except Exception as e:
-        return f"<h2>❌ فشل الاختبار:</h2><p>{str(e)}</p>"
+        print(f"❌ فشل الاتصال: {e}")
+        return None
 
 
 # إضافة context processor لتمرير now تلقائياً لجميع القوالب
@@ -2150,6 +2072,7 @@ def debug_worker(worker_id):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
 
