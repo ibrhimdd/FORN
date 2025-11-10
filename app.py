@@ -1,3 +1,4 @@
+import modal
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 import mysql.connector
 from datetime import datetime
@@ -2148,6 +2149,7 @@ def debug_worker(worker_id):
 @modal.wsgi_app()
 def run_flask():
     return flask_app
+
 
 
 
